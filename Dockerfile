@@ -7,12 +7,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && npm install -g @anthropic-ai/claude-code @musistudio/claude-code-router
 
-# 直接从官方 GitHub Release 拉编译好的二进制（而不是跑第三方脚本），
-# 资产命名规则：multica-cli-{version}-{os}-{arch}.tar.gz（例如 multica-cli-0.4.30-linux-amd64.tar.gz）
+# 直接从官方 GitHub Release 拉编译好的二进制，
+# 资产命名规则：multica-cli-{version}-{os}-{arch}.tar.gz
+# 使用 TARGETARCH 自动匹配构建架构（amd64/arm64）
 # 版本号按需固定，避免镜像内容随 main 分支更新漂移；升级时手动改这里
 ARG MULTICA_CLI_VERSION=0.4.30
-RUN curl -fsSL -o /tmp/multica.tar.gz \
-      "https://github.com/multica-ai/multica/releases/download/v${MULTICA_CLI_VERSION}/multica-cli-${MULTICA_CLI_VERSION}-linux-amd64.tar.gz" \
+ARG TARGETARCH
+RUN case "$TARGETARCH" in \
+      amd64) MULTICA_ARCH=amd64 ;; \
+      arm64) MULTICA_ARCH=arm64 ;; \
+      *) echo "unsupported arch: $TARGETARCH"; exit 1 ;; \
+    esac \
+    && curl -fsSL -o /tmp/multica.tar.gz \
+       "https://github.com/multica-ai/multica/releases/download/v${MULTICA_CLI_VERSION}/multica-cli-${MULTICA_CLI_VERSION}-linux-${MULTICA_ARCH}.tar.gz" \
     && tar -xzf /tmp/multica.tar.gz -C /tmp \
     && mv /tmp/multica /usr/local/bin/multica \
     && chmod +x /usr/local/bin/multica \
