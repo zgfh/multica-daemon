@@ -1,10 +1,11 @@
 FROM node:22-slim
 
-# 基础工具 + Claude Code（也可以按需换成 codex / opencode 等其他 agent CLI）
+# 基础工具 + Claude Code + claude-code-router
+# ccr 替代 cc-switch（GTK GUI），纯 CLI/服务化，做 OpenAI -> Anthropic 协议转换
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl ca-certificates git openssh-client bash \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g @anthropic-ai/claude-code
+    && npm install -g @anthropic-ai/claude-code @musistudio/claude-code-router
 
 # 直接从官方 GitHub Release 拉编译好的二进制（而不是跑第三方脚本），
 # 资产命名规则：multica-cli-{version}-{os}-{arch}.tar.gz（例如 multica-cli-0.4.30-linux-amd64.tar.gz）
